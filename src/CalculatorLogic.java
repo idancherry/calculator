@@ -7,12 +7,17 @@ public class CalculatorLogic {
     private int pos =0;
     private double ans = 0.0;
     private boolean cal= false;
+    private boolean period1 =false;
+    private boolean period2 =false;
 
     public void update(String s){
         if (ac(s)) return;
         boolean isNum = isNum(s);
         if (isNum) return;
         switch (pos){
+            case 0:
+                pos0(s);
+                break;
             case 1:
                 pos1(s);
                 break;
@@ -49,21 +54,33 @@ public class CalculatorLogic {
         return false;
     }
 
-
+    private void pos0(String s){
+        if (Objects.equals(s, "ANS")){
+            if (ans%1==0){
+                num2=String.valueOf((int)ans);
+            }else{
+                num2=String.valueOf(ans);
+                period2=true;
+            }
+            pos=1;
+        }
+    }
     private void pos1(String s){
         if(isOp(s)){
             op=s;
             pos=2;
-            if (cal) cal=false;
+            cal=false;
             return;
         }
         if (cal){
             ac("AC");
             cal=false;
         }
-        if(Objects.equals(s, ".")){
+        if(Objects.equals(s, ".") && !period1){
             num1+=s;
+            period1=true;
         }else if(Objects.equals(s, "DEL")){
+            if (num1.endsWith(".")) period1=false;
             num1=num1.substring(0,num1.length()-1);
             if (num1.isEmpty()) pos=0;
         }else if(Objects.equals(s, "=")){
@@ -75,15 +92,27 @@ public class CalculatorLogic {
         if(Objects.equals(s, "DEL")){
             op="";
             pos=1;
+        }else if(Objects.equals(s, "ANS")){
+            if (ans%1==0){
+                num2=String.valueOf((int)ans);
+            }else{
+                num2=String.valueOf(ans);
+                period2=true;
+            }
+            pos=3;
         }
     }
 
     private void pos3(String s){
         if(Objects.equals(s, "DEL")){
+            if (num2.endsWith(".")) period2=false;
             num2=num2.substring(0,num2.length()-1);
             if (num2.isEmpty()) pos=2;
         }else if(Objects.equals(s, "=")) {
             eval();
+        }else if(Objects.equals(s, ".") && !period2){
+            num2+=s;
+            period2=true;
         }
     }
 
@@ -108,12 +137,20 @@ public class CalculatorLogic {
                     break;
             }
         }catch (Exception ex){}
-        num1 = String.valueOf(result);
+        if ((result % 1) == 0){
+            num1 = String.valueOf((int)(result));
+            period1=false;
+        }else{
+            num1 = String.valueOf(result);
+            period1=true;
+        }
         op="";
         num2="";
         ans = result;
+        period2=false;
         pos=1;
         cal=true;
+        System.out.println(num1);
     }
 
 

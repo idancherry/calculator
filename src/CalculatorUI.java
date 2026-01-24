@@ -1,4 +1,6 @@
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 public class CalculatorUI {
     public CalculatorUI(){
@@ -7,6 +9,7 @@ public class CalculatorUI {
         setScreen();
         setTitle();
 
+        setKeys();
         allBtns();
         frame.setVisible(true);
     }
@@ -29,7 +32,16 @@ public class CalculatorUI {
 
     private void setScreen(){
         screen.setBounds(20, 40, 300, 30);
+        screen.setEditable(false);
+        screen.setFocusable(false);
         panel.add(screen);
+    }
+
+    private void setKeys(){
+        root = frame.getRootPane();
+        inputMap = root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        actionMap = root.getActionMap();
+
     }
 
     private void allBtns(){
@@ -58,12 +70,33 @@ public class CalculatorUI {
     }
 
     private JButton initButton(String val, int x, int y, int w){
-        JButton b = new JButton(val);
+        Action action = new AbstractAction(val) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                logic.update(val);
+                updateDisplay(logic.getDisplay());
+            }
+        };
+        KeyStroke key;
+        if (val.equals("=")) {
+            key = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        } else if (val.equals("DEL")) {
+            key = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0);
+        }else if (val.equals("x")) {
+            key = KeyStroke.getKeyStroke(KeyEvent.VK_MULTIPLY, 0);
+        }else if (val.equals(".")) {
+            key = KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, 0);
+        }else {
+            key = KeyStroke.getKeyStroke(val.charAt(0));
+        }
+
+        JButton b = new JButton(action);
         b.setBounds(x, y, w, 40);
-        b.setActionCommand(val);
-        b.addActionListener(e->{
-            logic.update(val);
-            updateDisplay(logic.getDisplay());});
+        InputMap im = panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = panel.getActionMap();
+
+        im.put(key, "key_" + val);
+        am.put("key_" + val, action);
         panel.add(b);
         return b;
     }
@@ -96,4 +129,9 @@ public class CalculatorUI {
     private JFrame frame = new JFrame("Calculator");
 
     private CalculatorLogic logic = new CalculatorLogic();
+
+    private JComponent root;
+    private InputMap inputMap;
+    private ActionMap actionMap;
+
 }
